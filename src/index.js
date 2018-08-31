@@ -21,5 +21,6 @@
 
 const parser = require('./parser');
 const constants = require('./constants');
+const sql = require('./sql');
 
-module.exports = Object.assign({}, parser, constants);
+module.exports = Object.assign({}, parser, constants, sql);

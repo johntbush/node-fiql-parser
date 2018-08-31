@@ -21,6 +21,13 @@ Implements only the basic [FIQL] standard draft without RSQL extensions like quo
 
 	const parser = require(fiql-parser);
 	parser.parse(query);
+	
+## To SQL
+	const sql = require(fiql-parser);
+    // convert FIQL string to a sql where clause
+    const sql = sql.toSql('a=eq=b,c!=d');
+    // (table.a = b OR table.c != d)
+	
 
 ## License
 
