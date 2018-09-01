@@ -4,11 +4,11 @@ const parser = require('./parser');
 const constants = require('./constants');
 
 const handeEq = (selectors, name, value) => {
-  return `${selectors[name]} = ${value}`
+  return `${selectors[name]} = '${value}'`
 };
 
 const handeNotEq = (selectors, name, value) => {
-  return `${selectors[name]} != ${value}`
+  return `${selectors[name]} != '${value}'`
 };
 
 const handleAnd = (selectors, lhs, rhs) => {
@@ -20,25 +20,29 @@ const handleOr = (selectors, lhs, rhs) => {
 };
 
 const handleLt = (selectors,name, value) => {
-  return `${selectors[name]} < ${value}`
+  return `${selectors[name]} < ${quoteValue(value)}`
 };
 
 const handleLte = (selectors,name, value) => {
-  return `${selectors[name]} <= ${value}`
+  return `${selectors[name]} <= ${quoteValue(value)}`
 };
 
 const handleGt = (selectors,name, value) => {
-  return `${selectors[name]} > ${value}`
+  return `${selectors[name]} > ${quoteValue(value)}`
 };
 
 const handleGte = (selectors,name, value) => {
-  return `${selectors[name]} >= ${value}`
+  return `${selectors[name]} >= ${quoteValue(value)}`
+};
+
+const quoteValue = (value) => {
+  return (isNaN(Number(value))) ? "'" + value + "'" : value;
 };
 
 const handleOp = (selectors, name, value) => {
   value.unshift('');
   const inStr = value.reduce( (acc,item) => {
-    const out = (typeof item === 'string') ? "'" + item + "'" : item;
+    const out = quoteValue(item);
     if (acc === '') {
       return out
     } else {
