@@ -16,7 +16,11 @@ describe('to sql', function () {
     const result = sql.toSql({"a":"table.a"}, ast)
     result.should.eql("table.a = 1")
   });
-
+  it('float operator test', () => {
+    const ast = parse('a=eq=-1.123');
+    const result = sql.toSql({"a":"table.a"}, ast)
+    result.should.eql("table.a = -1.123")
+  });
   it('== operator test', () => {
     const ast = parse('a==b');
     const result = sql.toSql({"a":"table.a"}, ast)

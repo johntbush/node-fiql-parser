@@ -4,11 +4,11 @@ const parser = require('./parser');
 const constants = require('./constants');
 
 const handeEq = (selectors, name, value) => {
-  return `${selectors[name]} = '${value}'`
+  return `${selectors[name]} = ${quoteValue(value)}`
 };
 
 const handeNotEq = (selectors, name, value) => {
-  return `${selectors[name]} != '${value}'`
+  return `${selectors[name]} != ${quoteValue(value)}`
 };
 
 const handleAnd = (selectors, lhs, rhs) => {
@@ -36,7 +36,7 @@ const handleGte = (selectors,name, value) => {
 };
 
 const quoteValue = (value) => {
-  return (isNaN(Number(value))) ? "'" + value + "'" : value;
+  return (isNaN(Number(value))) ? "'" + value + "'" : Number(value);
 };
 
 const handleOp = (selectors, name, value) => {
