@@ -48,11 +48,15 @@ const handleOp = (selectors, name, value) => {
   return `${selectors[name]} IN (${inStr})`
 };
 
-const validate = (ast, selectorMap) => {
+const validateAst = (ast, selectorMap) => {
   return selectors(ast).map(selector => {
         if (!selectorMap.hasOwnProperty(selector))
             throw new Error(`${selector} is not a valid selector alias`)
       })
+};
+
+const validate = (q, selectorMap) => {
+  return validateAst(parser.parse(q), selectorMap)
 };
 
 const selectors = (ast, acc) => {
@@ -67,6 +71,10 @@ const selectors = (ast, acc) => {
       return acc
   }
   return acc
+};
+
+const parseToSql = (q, selectors) => {
+  return toSql(selectors, parser.parse(q));
 };
 
 const toSql = (selectors, ast) => {
@@ -120,5 +128,7 @@ const toSql = (selectors, ast) => {
 module.exports = {
   toSql: toSql,
   selectors: selectors,
-  validate: validate
+  validateAst: validateAst,
+  validate: validate,
+  parseToSql: parseToSql
 };

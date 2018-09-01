@@ -52,6 +52,11 @@ describe('to sql', function () {
     const result = sql.toSql({"field":"table.field"}, ast)
     result.should.eql("table.field IN ('item0','item1','item2')")
   });
+  it('parseToSql test', () => {
+    const result = sql.parseToSql('field=op=(item0,item1,item2)', {"field":"table.field"});
+    result.should.eql("table.field IN ('item0','item1','item2')")
+  });
+
   it('test tablenames', () => {
     const ast = parse('a.b.c=eq=b;a==1,t.t.t=eq=1,werwerr.er=op=(1,2,3);a==1');
     const result = sql.selectors(ast);
@@ -66,7 +71,9 @@ describe('to sql', function () {
         "w.r":"where.are",
         "a":"advice"
     }
-    sql.validate(ast, selectorMap);
+    sql.validateAst(ast, selectorMap);
+    sql.validate('a.b.c=eq=b;a==1,t.t.t=eq=1,w.r=op=(1,2,3);a==1', selectorMap);
+
   });
 
 });

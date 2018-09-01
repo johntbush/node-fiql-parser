@@ -58,17 +58,67 @@ These two operators can be used to join the simple queries and build more involv
 Note that while the complexity of the queries can grow, the complete expression still remains in a form which is easy to understand and quite compact. The latter property becomes very useful when considering how to embed FIQL queries into HTTP URIs. 
 	
 ## Usage
-
+```
 	const parser = require(fiql-parser);
 	parser.parse(query);
+```
 	
 ## To SQL
-	const sql = require(fiql-parser);
 
+Turn a FIQL query into a WHERE clause...
+
+### Parse into SQL
+
+```
+    const sql = require(fiql-parser);
     // convert FIQL string to a sql where clause, pass an object mapping selector to table.column
-    const sql = sql.toSql({"a":"table.a","c":"table.c"}, 'a=eq=b,c!=d');
-    // (table.a = b OR table.c != d)
+    const result = sql.parseToSql('field=op=(item0,item1,item2)', {"field":"table.field"});
+```
 
+### Parse into AST
+
+```
+    const sql = require(fiql-parser);
+    const ast = parse('t=eq=q;(a=eq=b,c!=d)');
+    const result = sql.toSql({"a":"table.a","c":"table.c","t":"table.t"}, ast)
+
+```
+
+AST looks like this...
+
+```
+{
+	"type": "COMBINATION",
+	"operator": "AND",
+	"lhs": {
+		"type": "CONSTRAINT",
+		"selector": "t",
+		"comparison": "=eq=",
+		"argument": "q"
+	},
+	"rhs": {
+		"type": "COMBINATION",
+		"operator": "OR",
+		"lhs": {
+			"type": "CONSTRAINT",
+			"selector": "a",
+			"comparison": "=eq=",
+			"argument": "b"
+		},
+		"rhs": {
+			"type": "CONSTRAINT",
+			"selector": "c",
+			"comparison": "!=",
+			"argument": "d"
+		}
+	}
+}    
+```
+
+### Validate
+
+```
+    const sql = require(fiql-parser);
     // validate (throws error is selectorMap is missing data)
     const ast = parse('a.b.c=eq=b;a==1,t.t.t=eq=1,w.r=op=(1,2,3);a==1');
     const selectorMap = {
@@ -79,7 +129,8 @@ Note that while the complexity of the queries can grow, the complete expression 
         "a":"advice"
     }
     sql.validate(ast, selectorMap);
-    	
+```    	
+    
 
 ## License
 
