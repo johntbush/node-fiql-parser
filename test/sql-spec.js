@@ -21,6 +21,18 @@ describe('to sql', function () {
     const result = sql.toSql({"a":"table.a"}, ast)
     result.should.eql("table.a = -1.123")
   });
+  it('date operator test', () => {
+    const ast = parse('a=gt=2018-09-01;a=lt=2020-09-01');
+    const result = sql.toSql({"a":"table.a"}, ast)
+    result.should.eql("(table.a > '2018-09-01' AND table.a < '2020-09-01')")
+  });
+  it('datetime operator test', () => {
+    const ast = parse('a=gt=2018-09-01T12:14:28Z;a=lt=2020-09-01T12:14:28Z');
+    const result = sql.toSql({"a":"table.a"}, ast)
+    result.should.eql("(table.a > '2018-09-01T12:14:28Z' AND table.a < '2020-09-01T12:14:28Z')")
+  });
+
+
   it('== operator test', () => {
     const ast = parse('a==b');
     const result = sql.toSql({"a":"table.a"}, ast)
