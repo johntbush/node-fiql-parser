@@ -48,6 +48,50 @@ const handleOp = (table, name, value) => {
   return `${table}.${name} IN (${inStr})`
 };
 
+class Tables {
+  constructor(table, children = {}) {
+    this._root = table;
+    this.children = children;
+  }
+
+  get root() {
+    return this._root;
+  }
+
+  tableName(alias) {
+    return children[alias];
+  }
+
+  addChild(alias, table) {
+    this.children[alias] = table
+  }
+
+  isValid(alias) {
+    return this.children[alias] != null;
+  }
+}
+
+const validate = (ast, tables) => {
+  return tableNames(ast)
+      .map(table => {
+        if (!tables.isValid(table))
+            throw new Error(`${table} is not a valid table alias`)
+      })
+};
+
+const tableNames = (ast, acc) => {
+  if (acc == null) acc = [];
+  if (ast == null) return acc;
+  if (ast.type === constants.NODE_TYPE.CONSTRAINT) {
+    acc.push(ast.selector)
+    return acc
+  } else if (ast.type === constants.NODE_TYPE.COMBINATION) {
+      acc = (tableNames(ast.rhs, acc));
+      acc = (tableNames(ast.lhs, acc));
+      return acc
+  }
+  return acc
+};
 
 const toSql = (table, ast) => {
   if (ast.type === constants.NODE_TYPE.CONSTRAINT) {
@@ -98,5 +142,8 @@ const toSql = (table, ast) => {
 };
 
 module.exports = {
-  toSql: toSql
+  toSql: toSql,
+  tableNames: tableNames,
+  validate: validate,
+  Tables: Tables
 };

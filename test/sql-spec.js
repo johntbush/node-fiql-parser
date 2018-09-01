@@ -6,51 +6,65 @@ const sql = require('../src');
 describe('to sql', function () {
 
   const parse = parser.parse;
-  it.only('eq operator test', () => {
+  it('eq operator test', () => {
     const ast = parse('a=eq=b');
     const result = sql.toSql('table', ast)
     result.should.eql("table.a = b")
   });
-  it.only('== operator test', () => {
+  it('== operator test', () => {
     const ast = parse('a==b');
     const result = sql.toSql('table', ast)
     result.should.eql("table.a = b")
   });
-  it.only('!= operator test', () => {
+  it('!= operator test', () => {
     const ast = parse('a!=b');
     const result = sql.toSql('table', ast)
     result.should.eql("table.a != b")
   });
-  it.only('=gt= operator test', () => {
+  it('=gt= operator test', () => {
     const ast = parse('a=gt=b');
     const result = sql.toSql('table', ast)
     result.should.eql("table.a > b")
   });
-  it.only('=ge= operator test', () => {
+  it('=ge= operator test', () => {
     const ast = parse('a=ge=b');
     const result = sql.toSql('table', ast)
     result.should.eql("table.a >= b")
   });
 
-  it.only('basic AND test', () => {
+  it('basic AND test', () => {
     const ast = parse('a=eq=b;c!=d');
     const result = sql.toSql('table', ast)
     result.should.eql("(table.a = b AND table.c != d)")
   });
-  it.only('basic OR test', () => {
+  it('basic OR test', () => {
     const ast = parse('a=eq=b,c!=d');
     const result = sql.toSql('table', ast)
     result.should.eql("(table.a = b OR table.c != d)")
   });
-  it.only('nested combination test', () => {
+  it('nested combination test', () => {
     const ast = parse('t=eq=q;(a=eq=b,c!=d)');
     const result = sql.toSql('table', ast)
     result.should.eql("(table.t = q AND (table.a = b OR table.c != d))")
   });
-  it.only('IN test', () => {
+  it('IN test', () => {
     const ast = parse('field=op=(item0,item1,item2)');
     const result = sql.toSql('table', ast)
     result.should.eql("table.field IN ('item0','item1','item2')")
+  });
+  it('test tablenames', () => {
+    const ast = parse('a.b.c=eq=b;a==1,t.t.t=eq=1,werwerr.er=op=(1,2,3);a==1');
+    const result = sql.tableNames(ast);
+    result.should.eql(["a","werwerr.er","t.t.t","a","a.b.c"])
+  });
+  it('test validate', () => {
+    const ast = parse('a.b.c=eq=b;a==1,t.t.t=eq=1,w.r=op=(1,2,3);a==1');
+    const tables = new sql.Tables('root');
+    tables.addChild("a.b.c","asdf");
+    tables.addChild("t.t.t","asdf");
+    tables.addChild("w.r","asdf");
+    tables.addChild("a","asdf");
+    sql.validate(ast, tables);
   });
 
 });
