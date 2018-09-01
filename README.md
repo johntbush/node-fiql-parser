@@ -64,10 +64,22 @@ Note that while the complexity of the queries can grow, the complete expression 
 	
 ## To SQL
 	const sql = require(fiql-parser);
-    // convert FIQL string to a sql where clause
+
+    // convert FIQL string to a sql where clause, pass an object mapping selector to table.column
     const sql = sql.toSql({"a":"table.a","c":"table.c"}, 'a=eq=b,c!=d');
     // (table.a = b OR table.c != d)
-	
+
+    // validate (throws error is selectorMap is missing data)
+    const ast = parse('a.b.c=eq=b;a==1,t.t.t=eq=1,w.r=op=(1,2,3);a==1');
+    const selectorMap = {
+        "a" :"bills.status",
+        "a.b.c":"user.comment.date",
+        "t.t.t":"totally.taking.time",
+        "w.r":"where.are",
+        "a":"advice"
+    }
+    sql.validate(ast, selectorMap);
+    	
 
 ## License
 
