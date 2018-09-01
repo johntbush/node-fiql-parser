@@ -120,7 +120,7 @@ AST looks like this...
 
 ```
     const sql = require(fiql-parser);
-    // validate (throws error is selectorMap is missing data)
+    // validate (throws error if selectorMap is missing data)
     const ast = parse('a.b.c=eq=b;a==1,t.t.t=eq=1,w.r=op=(1,2,3);a==1');
     const selectorMap = {
         "a" :"bills.status",
