@@ -72,7 +72,8 @@ Turn a FIQL query into a WHERE clause...
 ```
     const sql = require(fiql-parser);
     // convert FIQL string to a sql where clause, pass an object mapping selector to table.column
-    const result = sql.parseToSql('field=op=(item0,item1,item2)', {"field":"table.field"});
+    const result = sql.parseToSql('field=op=(item0,item1,item2)', {"field":"table.field"});    
+    // table.field IN ('item0','item1','item2')
 ```
 
 ### Parse into AST
