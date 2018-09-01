@@ -3,39 +3,39 @@
 const parser = require('./parser');
 const constants = require('./constants');
 
-const handeEq = (table, name, value) => {
-  return `${table}.${name} = ${value}`
+const handeEq = (selectors, name, value) => {
+  return `${selectors[name]} = ${value}`
 };
 
-const handeNotEq = (table, name, value) => {
-  return `${table}.${name} != ${value}`
+const handeNotEq = (selectors, name, value) => {
+  return `${selectors[name]} != ${value}`
 };
 
-const handleAnd = (table, lhs, rhs) => {
-  return "(" + toSql(table, lhs) + " AND " + toSql(table, rhs) + ")"
+const handleAnd = (selectors, lhs, rhs) => {
+  return "(" + toSql(selectors, lhs) + " AND " + toSql(selectors, rhs) + ")"
 };
 
-const handleOr = (table, lhs, rhs) => {
-  return "(" + toSql(table, lhs) + " OR " + toSql(table, rhs) + ")"
+const handleOr = (selectors, lhs, rhs) => {
+  return "(" + toSql(selectors, lhs) + " OR " + toSql(selectors, rhs) + ")"
 };
 
-const handleLt = (table,name, value) => {
-  return `${table}.${name} < ${value}`
+const handleLt = (selectors,name, value) => {
+  return `${selectors[name]} < ${value}`
 };
 
-const handleLte = (table,name, value) => {
-  return `${table}.${name} <= ${value}`
+const handleLte = (selectors,name, value) => {
+  return `${selectors[name]} <= ${value}`
 };
 
-const handleGt = (table,name, value) => {
-  return `${table}.${name} > ${value}`
+const handleGt = (selectors,name, value) => {
+  return `${selectors[name]} > ${value}`
 };
 
-const handleGte = (table,name, value) => {
-  return `${table}.${name} >= ${value}`
+const handleGte = (selectors,name, value) => {
+  return `${selectors[name]} >= ${value}`
 };
 
-const handleOp = (table, name, value) => {
+const handleOp = (selectors, name, value) => {
   value.unshift('');
   const inStr = value.reduce( (acc,item) => {
     const out = (typeof item === 'string') ? "'" + item + "'" : item;
@@ -45,83 +45,59 @@ const handleOp = (table, name, value) => {
       return acc + "," + out
     }
   });
-  return `${table}.${name} IN (${inStr})`
+  return `${selectors[name]} IN (${inStr})`
 };
 
-class Tables {
-  constructor(table, children = {}) {
-    this._root = table;
-    this.children = children;
-  }
-
-  get root() {
-    return this._root;
-  }
-
-  tableName(alias) {
-    return children[alias];
-  }
-
-  addChild(alias, table) {
-    this.children[alias] = table
-  }
-
-  isValid(alias) {
-    return this.children[alias] != null;
-  }
-}
-
-const validate = (ast, tables) => {
-  return tableNames(ast)
-      .map(table => {
-        if (!tables.isValid(table))
-            throw new Error(`${table} is not a valid table alias`)
+const validate = (ast, selectorMap) => {
+  return selectors(ast).map(selector => {
+        if (!selectorMap.hasOwnProperty(selector))
+            throw new Error(`${selector} is not a valid selector alias`)
       })
 };
 
-const tableNames = (ast, acc) => {
+const selectors = (ast, acc) => {
   if (acc == null) acc = [];
   if (ast == null) return acc;
   if (ast.type === constants.NODE_TYPE.CONSTRAINT) {
     acc.push(ast.selector)
     return acc
   } else if (ast.type === constants.NODE_TYPE.COMBINATION) {
-      acc = (tableNames(ast.rhs, acc));
-      acc = (tableNames(ast.lhs, acc));
+      acc = (selectors(ast.rhs, acc));
+      acc = (selectors(ast.lhs, acc));
       return acc
   }
   return acc
 };
 
-const toSql = (table, ast) => {
+const toSql = (selectors, ast) => {
   if (ast.type === constants.NODE_TYPE.CONSTRAINT) {
     switch (ast.comparison) {
       case "=eq=":
-        return handeEq(table, ast.selector, ast.argument);
+        return handeEq(selectors, ast.selector, ast.argument);
         break;
       case "==":
-        return handeEq(table, ast.selector, ast.argument);
+        return handeEq(selectors, ast.selector, ast.argument);
         break;
       case "!=":
-        return handeNotEq(table, ast.selector, ast.argument);
+        return handeNotEq(selectors, ast.selector, ast.argument);
         break;
       case "=ne=":
-        return handeNotEq(table, ast.selector, ast.argument);
+        return handeNotEq(selectors, ast.selector, ast.argument);
         break;
       case "=op=":
-        return handleOp(table, ast.selector, ast.argument);
+        return handleOp(selectors, ast.selector, ast.argument);
         break;
       case '=lt=':
-        return handleLt(table, ast.selector, ast.argument);
+        return handleLt(selectors, ast.selector, ast.argument);
         break;
       case '=le=':
-        return handleLte(table, ast.selector, ast.argument);
+        return handleLte(selectors, ast.selector, ast.argument);
         break;
       case '=gt=':
-        return handleGt(table, ast.selector, ast.argument);
+        return handleGt(selectors, ast.selector, ast.argument);
         break;
       case '=ge=':
-        return handleGte(table, ast.selector, ast.argument);
+        return handleGte(selectors, ast.selector, ast.argument);
         break;
       default:
         throw new Error("unsupported operator")
@@ -130,10 +106,10 @@ const toSql = (table, ast) => {
   if (ast.type === constants.NODE_TYPE.COMBINATION) {
     switch (ast.operator) {
       case constants.OPERATOR.AND:
-        return handleAnd(table, ast.lhs, ast.rhs);
+        return handleAnd(selectors, ast.lhs, ast.rhs);
         break;
       case constants.OPERATOR.OR:
-        return handleOr(table, ast.lhs, ast.rhs);
+        return handleOr(selectors, ast.lhs, ast.rhs);
         break;
       default:
         throw new Error("unsupported operator")
@@ -143,7 +119,6 @@ const toSql = (table, ast) => {
 
 module.exports = {
   toSql: toSql,
-  tableNames: tableNames,
-  validate: validate,
-  Tables: Tables
+  selectors: selectors,
+  validate: validate
 };
