@@ -43,10 +43,12 @@ These six operators can be used to do all sort of simple queries, for example:
 
 The following table lists two joining operators:
 
-| Composite Operator | Description |
-| --- | --- | --- |
-| ;	| AND |
-| ,	| OR |
+| Composite Operator  | Description|
+| ------------- | ------------- |
+| ;  | AND |
+| ,  | OR |
+
+
 
 These two operators can be used to join the simple queries and build more involved queries which can be as complex as required. Here are some examples:
 - “age=gt=10;age=lt=20”: find all people older than 10 and younger than 20
