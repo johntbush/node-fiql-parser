@@ -84,7 +84,6 @@ The default format will single quote strings and leave numbers alone
 
 ```
     const ast = parse('a=gt=2018-09-01T12:14:28Z;a=lt=2020-09-01T12:14:28Z');
-    const ast = parse('a=gt=2018-09-01T12:14:28Z;a=lt=2020-09-01T12:14:28Z');
     const selectors = [{
                      	"name": "a",
                      	"alias": "table.a",
