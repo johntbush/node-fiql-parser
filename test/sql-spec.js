@@ -116,15 +116,15 @@ describe('to sql', function () {
   });
   it('test validate', () => {
     const ast = parse('a.b.c=eq=b;a==1,t.t.t=eq=1,w.r=op=(1,2,3);a==1');
-    const selectorMap = {
-        "a" :"bills.status",
-        "a.b.c":"user.comment.date",
-        "t.t.t":"totally.taking.time",
-        "w.r":"where.are",
-        "a":"advice"
-    }
-    sql.validateAst(ast, selectorMap);
-    sql.validate('a.b.c=eq=b;a==1,t.t.t=eq=1,w.r=op=(1,2,3);a==1', selectorMap);
+    const selectors = new sql.Selectors()
+    selectors.add("a", "bills.status")
+    selectors.add("a" ,"bills.status")
+    selectors.add("a.b.c","user.comment.date")
+    selectors.add("t.t.t","totally.taking.time")
+    selectors.add("w.r","where.are")
+    selectors.add("a","advice")
+    sql.validateAst(ast, selectors);
+    sql.validate('a.b.c=eq=b;a==1,t.t.t=eq=1,w.r=op=(1,2,3);a==1', selectors);
 
   });
 

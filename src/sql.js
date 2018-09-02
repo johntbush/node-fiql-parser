@@ -54,13 +54,13 @@ const handleOp = (name, format, value) => {
 
 const validateAst = (ast, selectorMap) => {
   return selectors(ast).map(selector => {
-        if (!selectorMap.hasOwnProperty(selector))
+        if (selectorMap.get(selector) == null)
             throw new Error(`${selector} is not a valid selector alias`)
       })
 };
 
-const validate = (q, selectorMap) => {
-  return validateAst(parser.parse(q), selectorMap)
+const validate = (q, selectors) => {
+  return validateAst(parser.parse(q), selectors)
 };
 
 const selectors = (ast, acc) => {
@@ -82,6 +82,7 @@ const parseToSql = (q, selectors) => {
 };
 
 const toSql = (selectors, ast) => {
+  validateAst(ast, selectors)
   if (ast.type === constants.NODE_TYPE.CONSTRAINT) {
     const selector = selectors.get(ast.selector)
     const name = selector.alias
