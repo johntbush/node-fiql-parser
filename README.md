@@ -71,9 +71,25 @@ Turn a FIQL query into a WHERE clause...
 
 ```
     const sql = require(fiql-parser);
-    // convert FIQL string to a sql where clause, pass an object mapping selector to table.column
-    const result = sql.parseToSql('field=op=(item0,item1,item2)', {"field":"table.field"});    
+    // convert FIQL string to a sql where clause
+    // create selectors which map a column alias to the actual table.column name
+    const selectors = new sql.Selectors()
+    selectors.add("field", "table.field")
+    const result = sql.parseToSql('field=op=(item0,item1,item2)', selectors);
     // table.field IN ('item0','item1','item2')
+```
+
+### Custom Formats
+
+If you need to apply any custom formatting to the value, selectors can take a function.
+The default format will single quote strings and leave numbers alone
+
+```
+    const ast = parse('a=gt=2018-09-01T12:14:28Z;a=lt=2020-09-01T12:14:28Z');
+    const selectors = new sql.Selectors()
+    selectors.add("a", "table.a", (x) => {return `'${x.split('T')[0]}'`})
+    const result = sql.toSql(selectors, ast)
+    result.should.eql("(table.a > '2018-09-01' AND table.a < '2020-09-01')")
 ```
 
 ### Parse into AST
@@ -81,8 +97,11 @@ Turn a FIQL query into a WHERE clause...
 ```
     const sql = require(fiql-parser);
     const ast = parse('t=eq=q;(a=eq=b,c!=d)');
-    const result = sql.toSql({"a":"table.a","c":"table.c","t":"table.t"}, ast)
-
+    const selectors = new sql.Selectors()
+    selectors.add("a", "table.a")
+    selectors.add("c", "table.c")
+    selectors.add("t", "table.t")
+    const result = sql.toSql(selectors, ast)
 ```
 
 AST looks like this...
@@ -118,18 +137,24 @@ AST looks like this...
 
 ### Validate
 
+The validate will happen automatically by toSql or parseToSql, but you can invoke it
+directly if you like.  If any selector is missing, the validate will throw an error telling
+you which selector is missing.
+
 ```
-    const sql = require(fiql-parser);
-    // validate (throws error if selectorMap is missing data)
     const ast = parse('a.b.c=eq=b;a==1,t.t.t=eq=1,w.r=op=(1,2,3);a==1');
-    const selectorMap = {
-        "a" :"bills.status",
-        "a.b.c":"user.comment.date",
-        "t.t.t":"totally.taking.time",
-        "w.r":"where.are",
-        "a":"advice"
-    }
-    sql.validate(ast, selectorMap);
+    const selectors = new sql.Selectors()
+    selectors.add("a", "bills.status")
+    selectors.add("a" ,"bills.status")
+    selectors.add("a.b.c","user.comment.date")
+    selectors.add("t.t.t","totally.taking.time")
+    selectors.add("w.r","where.are")
+    selectors.add("a","advice")
+    sql.validateAst(ast, selectors);
+
+    // without going to an AST first
+    sql.validate('a.b.c=eq=b;a==1,t.t.t=eq=1,w.r=op=(1,2,3);a==1', selectors);
+
 ```    	
     
 
