@@ -85,7 +85,14 @@ The default format will single quote strings and leave numbers alone
 ```
     const ast = parse('a=gt=2018-09-01T12:14:28Z;a=lt=2020-09-01T12:14:28Z');
     const ast = parse('a=gt=2018-09-01T12:14:28Z;a=lt=2020-09-01T12:14:28Z');
-    const result = sql.toSql([{"name":"a","alias":"table.a","format":(x) => {return `'${x.split('T')[0]}'`}}], ast)
+    const selectors = [{
+                     	"name": "a",
+                     	"alias": "table.a",
+                     	"format": (x) => {
+                     		return `'${x.split('T')[0]}'`
+                     	}
+                     }]
+    const result = sql.toSql(selectors, ast)
     result.should.eql("(table.a > '2018-09-01' AND table.a < '2020-09-01')")
 ```
 
@@ -94,7 +101,16 @@ The default format will single quote strings and leave numbers alone
 ```
     const sql = require(fiql-parser);
     const ast = parse('t=eq=q;(a=eq=b,c!=d)');
-    const result = sql.toSql([{"name":"a","alias":"table.a"},{"name":"c","alias":"table.c"},{"name":"t","alias":"table.t"}], ast)
+    const result = sql.toSql([{
+                             	"name": "a",
+                             	"alias": "table.a"
+                             }, {
+                             	"name": "c",
+                             	"alias": "table.c"
+                             }, {
+                             	"name": "t",
+                             	"alias": "table.t"
+                             }], ast)
 ```
 
 AST looks like this...
