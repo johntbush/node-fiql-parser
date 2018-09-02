@@ -3,12 +3,12 @@
 const parser = require('./parser');
 const constants = require('./constants');
 
-const handeEq = (selectors, name, value) => {
-  return `${selectors[name]} = ${quoteValue(value)}`
+const handeEq = (name, value) => {
+  return `${name} = ${value}`
 };
 
-const handeNotEq = (selectors, name, value) => {
-  return `${selectors[name]} != ${quoteValue(value)}`
+const handeNotEq = (name, value) => {
+  return `${name} != ${value}`
 };
 
 const handleAnd = (selectors, lhs, rhs) => {
@@ -19,37 +19,37 @@ const handleOr = (selectors, lhs, rhs) => {
   return "(" + toSql(selectors, lhs) + " OR " + toSql(selectors, rhs) + ")"
 };
 
-const handleLt = (selectors,name, value) => {
-  return `${selectors[name]} < ${quoteValue(value)}`
+const handleLt = (name, value) => {
+  return `${name} < ${value}`
 };
 
-const handleLte = (selectors,name, value) => {
-  return `${selectors[name]} <= ${quoteValue(value)}`
+const handleLte = (name, value) => {
+  return `${name} <= ${value}`
 };
 
-const handleGt = (selectors,name, value) => {
-  return `${selectors[name]} > ${quoteValue(value)}`
+const handleGt = (name, value) => {
+  return `${name} > ${value}`
 };
 
-const handleGte = (selectors,name, value) => {
-  return `${selectors[name]} >= ${quoteValue(value)}`
+const handleGte = (name, value) => {
+  return `${name} >= ${value}`
 };
 
 const quoteValue = (value) => {
   return (isNaN(Number(value))) ? "'" + value + "'" : Number(value);
 };
 
-const handleOp = (selectors, name, value) => {
+const handleOp = (name, format, value) => {
   value.unshift('');
   const inStr = value.reduce( (acc,item) => {
-    const out = quoteValue(item);
+    const out = format(item);
     if (acc === '') {
       return out
     } else {
       return acc + "," + out
     }
   });
-  return `${selectors[name]} IN (${inStr})`
+  return `${name} IN (${inStr})`
 };
 
 const validateAst = (ast, selectorMap) => {
@@ -83,33 +83,35 @@ const parseToSql = (q, selectors) => {
 
 const toSql = (selectors, ast) => {
   if (ast.type === constants.NODE_TYPE.CONSTRAINT) {
+    const selector = selectors.get(ast.selector)
+    const name = selector.alias
     switch (ast.comparison) {
       case "=eq=":
-        return handeEq(selectors, ast.selector, ast.argument);
+        return handeEq(name, selector.format(ast.argument));
         break;
       case "==":
-        return handeEq(selectors, ast.selector, ast.argument);
+        return handeEq(name, selector.format(ast.argument));
         break;
       case "!=":
-        return handeNotEq(selectors, ast.selector, ast.argument);
+        return handeNotEq(name, selector.format(ast.argument));
         break;
       case "=ne=":
-        return handeNotEq(selectors, ast.selector, ast.argument);
+        return handeNotEq(name, selector.format(ast.argument));
         break;
       case "=op=":
-        return handleOp(selectors, ast.selector, ast.argument);
+        return handleOp(name, selector.format, ast.argument);
         break;
       case '=lt=':
-        return handleLt(selectors, ast.selector, ast.argument);
+        return handleLt(name, selector.format(ast.argument));
         break;
       case '=le=':
-        return handleLte(selectors, ast.selector, ast.argument);
+        return handleLte(name, selector.format(ast.argument));
         break;
       case '=gt=':
-        return handleGt(selectors, ast.selector, ast.argument);
+        return handleGt(name, selector.format(ast.argument));
         break;
       case '=ge=':
-        return handleGte(selectors, ast.selector, ast.argument);
+        return handleGte(name, selector.format(ast.argument));
         break;
       default:
         throw new Error("unsupported operator")
@@ -129,10 +131,29 @@ const toSql = (selectors, ast) => {
   }
 };
 
+class Selectors {
+    constructor(defaultFormat = quoteValue, selectors = {}) {
+        this.defaultFormat = defaultFormat;
+        this.selectors = selectors
+    }
+    add(name, alias, format) {
+        if (format == null)
+            format = this.defaultFormat
+        this.selectors[name] = {alias: alias, format: format}
+    }
+    get(name) {
+        console.log(`getSelector(${name})`)
+        if (this.selectors[name] == null)
+            return undefined
+        return this.selectors[name]
+    }
+}
+
 module.exports = {
   toSql: toSql,
   selectors: selectors,
   validateAst: validateAst,
   validate: validate,
-  parseToSql: parseToSql
+  parseToSql: parseToSql,
+  Selectors: Selectors
 };
