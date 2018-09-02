@@ -72,10 +72,8 @@ Turn a FIQL query into a WHERE clause...
 ```
     const sql = require(fiql-parser);
     // convert FIQL string to a sql where clause
-    // create selectors which map a column alias to the actual table.column name
-    const selectors = new sql.Selectors()
-    selectors.add("field", "table.field")
-    const result = sql.parseToSql('field=op=(item0,item1,item2)', selectors);
+    // first param is a list of objects mapping the field names in the FIQL to table.columns in the sql, these are called selectors
+    const result = sql.parseToSql([{"name":"field","alias":"table.field"}], ast)
     // table.field IN ('item0','item1','item2')
 ```
 
@@ -86,9 +84,8 @@ The default format will single quote strings and leave numbers alone
 
 ```
     const ast = parse('a=gt=2018-09-01T12:14:28Z;a=lt=2020-09-01T12:14:28Z');
-    const selectors = new sql.Selectors()
-    selectors.add("a", "table.a", (x) => {return `'${x.split('T')[0]}'`})
-    const result = sql.toSql(selectors, ast)
+    const ast = parse('a=gt=2018-09-01T12:14:28Z;a=lt=2020-09-01T12:14:28Z');
+    const result = sql.toSql([{"name":"a","alias":"table.a","format":(x) => {return `'${x.split('T')[0]}'`}}], ast)
     result.should.eql("(table.a > '2018-09-01' AND table.a < '2020-09-01')")
 ```
 
@@ -97,11 +94,7 @@ The default format will single quote strings and leave numbers alone
 ```
     const sql = require(fiql-parser);
     const ast = parse('t=eq=q;(a=eq=b,c!=d)');
-    const selectors = new sql.Selectors()
-    selectors.add("a", "table.a")
-    selectors.add("c", "table.c")
-    selectors.add("t", "table.t")
-    const result = sql.toSql(selectors, ast)
+    const result = sql.toSql([{"name":"a","alias":"table.a"},{"name":"c","alias":"table.c"},{"name":"t","alias":"table.t"}], ast)
 ```
 
 AST looks like this...
@@ -142,19 +135,7 @@ directly if you like.  If any selector is missing, the validate will throw an er
 you which selector is missing.
 
 ```
-    const ast = parse('a.b.c=eq=b;a==1,t.t.t=eq=1,w.r=op=(1,2,3);a==1');
-    const selectors = new sql.Selectors()
-    selectors.add("a", "bills.status")
-    selectors.add("a" ,"bills.status")
-    selectors.add("a.b.c","user.comment.date")
-    selectors.add("t.t.t","totally.taking.time")
-    selectors.add("w.r","where.are")
-    selectors.add("a","advice")
-    sql.validateAst(ast, selectors);
-
-    // without going to an AST first
-    sql.validate('a.b.c=eq=b;a==1,t.t.t=eq=1,w.r=op=(1,2,3);a==1', selectors);
-
+TODO
 ```    	
     
 
