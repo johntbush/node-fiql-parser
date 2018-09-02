@@ -12,11 +12,11 @@ const handeNotEq = (name, value) => {
 };
 
 const handleAnd = (selectors, lhs, rhs) => {
-  return "(" + toSql(selectors, lhs) + " AND " + toSql(selectors, rhs) + ")"
+  return "(" + toSqlInternal(selectors, lhs) + " AND " + toSqlInternal(selectors, rhs) + ")"
 };
 
 const handleOr = (selectors, lhs, rhs) => {
-  return "(" + toSql(selectors, lhs) + " OR " + toSql(selectors, rhs) + ")"
+  return "(" + toSqlInternal(selectors, lhs) + " OR " + toSqlInternal(selectors, rhs) + ")"
 };
 
 const handleLt = (name, value) => {
@@ -81,7 +81,7 @@ const parseToSql = (q, selectors) => {
   return toSql(selectors, parser.parse(q));
 };
 
-const toSql = (selectors, ast) => {
+const toSqlInternal = (selectors, ast) => {
   validateAst(ast, selectors)
   if (ast.type === constants.NODE_TYPE.CONSTRAINT) {
     const selector = selectors.get(ast.selector)
@@ -130,12 +130,30 @@ const toSql = (selectors, ast) => {
         throw new Error("unsupported operator")
     }
   }
+}
+
+const toSql = (selectorList, ast) => {
+  const selectors = new Selectors(quoteValue, selectorList)
+  return toSqlInternal(selectors, ast)
 };
 
 class Selectors {
-    constructor(defaultFormat = quoteValue, selectors = {}) {
+    constructor(defaultFormat = quoteValue, selectorList = []) {
         this.defaultFormat = defaultFormat;
-        this.selectors = selectors
+        this.selectors = {}
+        selectorList.forEach( (selector) => {
+            if (!selector.hasOwnProperty("name")) {
+                throw Error("a selector must have a name")
+            }
+            if (!selector.hasOwnProperty("alias")) {
+                throw Error("a selector must have an alias")
+            }
+
+            if (!selector.hasOwnProperty('format')){
+                selector.format = defaultFormat
+            }
+            this.selectors[selector.name] = selector
+        });
     }
     add(name, alias, format) {
         if (format == null)
@@ -143,7 +161,6 @@ class Selectors {
         this.selectors[name] = {alias: alias, format: format}
     }
     get(name) {
-        console.log(`getSelector(${name})`)
         if (this.selectors[name] == null)
             return undefined
         return this.selectors[name]
