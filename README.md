@@ -150,7 +150,16 @@ directly if you like.  If any selector is missing, the validate will throw an er
 you which selector is missing.
 
 ```
-TODO
+const selectors = [
+    {"name":"a", "alias":"bills.status"},
+    {"name":"a" ,"alias":"bills.status"},
+    {"name":"a.b.c","alias":"user.comment.date"},
+    {"name":"t.t.t","alias":"totally.taking.time"},
+    {"name":"w.r","alias":"where.are"},
+    {"name":"a","alias":"advice"}
+]
+sql.validate('a.b.c=eq=b;a==1,t.t.t=eq=1,w.r=op=(1,2,3);a==1', selectors);
+
 ```    	
     
 

@@ -82,18 +82,16 @@ describe('to sql', function () {
     const result = sql.selectors(ast);
     result.should.eql(["a","werwerr.er","t.t.t","a","a.b.c"])
   });
-//  it('test validate', () => {
-//    const ast = parse('a.b.c=eq=b;a==1,t.t.t=eq=1,w.r=op=(1,2,3);a==1');
-//    const selectors = new sql.Selectors()
-//    selectors.add("a", "bills.status")
-//    selectors.add("a" ,"bills.status")
-//    selectors.add("a.b.c","user.comment.date")
-//    selectors.add("t.t.t","totally.taking.time")
-//    selectors.add("w.r","where.are")
-//    selectors.add("a","advice")
-//    sql.validateAst(ast, selectors);
-//    sql.validate('a.b.c=eq=b;a==1,t.t.t=eq=1,w.r=op=(1,2,3);a==1', selectors);
-//
-//  });
+  it('test validate', () => {
+    const selectors = [
+        {"name":"a", "alias":"bills.status"},
+        {"name":"a" ,"alias":"bills.status"},
+        {"name":"a.b.c","alias":"user.comment.date"},
+        {"name":"t.t.t","alias":"totally.taking.time"},
+        {"name":"w.r","alias":"where.are"},
+        {"name":"a","alias":"advice"}
+    ]
+    sql.validate('a.b.c=eq=b;a==1,t.t.t=eq=1,w.r=op=(1,2,3);a==1', selectors);
+  });
 
 });

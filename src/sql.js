@@ -59,8 +59,8 @@ const validateAst = (ast, selectorMap) => {
       })
 };
 
-const validate = (q, selectors) => {
-  return validateAst(parser.parse(q), selectors)
+const validate = (q, selectorList) => {
+  return validateAst(parser.parse(q),  new Selectors(quoteValue, selectorList))
 };
 
 const selectors = (ast, acc) => {
