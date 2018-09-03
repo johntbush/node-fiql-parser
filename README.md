@@ -75,6 +75,10 @@ Turn a FIQL query into a WHERE clause...
     // first param is a list of objects mapping the field names in the FIQL to table.columns in the sql, these are called selectors
     const result = sql.parseToSql([{"name":"field","alias":"table.field"}], ast)
     // table.field IN ('item0','item1','item2')
+
+    const ast = parse('t=eq=q;(a=eq=b,c!=d)');
+    const result = sql.toSql([{"name":"a","alias":"table.a"},{"name":"c","alias":"table.c"},{"name":"t","alias":"table.t"}], ast)
+    // (table.t = 'q' AND (table.a = 'b' OR table.c != 'd'))
 ```
 
 ### Custom Formats
