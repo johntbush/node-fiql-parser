@@ -15,7 +15,7 @@ conjunction
 	/ constraint
 
 constraint
-	= s:selector c:$comparison a:argument  {return {type: NODE_TYPE.CONSTRAINT, selector: s, comparison: c, argument: a};}
+	= s:selector c:comparison a:argument  {return {type: NODE_TYPE.CONSTRAINT, selector: s, comparison: c, argument: a};}
 	/ s:selector  {return {type: NODE_TYPE.CONSTRAINT, selector: s};}
 	/ "(" d:disjunction ")"  {return d;}
 
@@ -23,7 +23,7 @@ selector
 	= $unreserved+
 
 comparison
-	= ( "=" alpha* / "!" ) "="
+	= "[" o:$op+ "]=" {return o;}
 
 argument
 	= "(" head:value tail:( "," value )* ")"  {return [head].concat((tail || []).map(item => item[1]));}
@@ -39,6 +39,10 @@ unreserved
 
 pct_encoded
 	= "%" d0:hex_digit d1:hex_digit  {return String.fromCharCode(parseInt(d0 + d1, 16));}
+
+op
+	= alpha
+	/ [_-]
 
 alpha
 	= [a-z]i

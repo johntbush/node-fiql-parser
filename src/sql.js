@@ -87,31 +87,25 @@ const toSqlInternal = (selectors, ast) => {
     const selector = selectors.get(ast.selector)
     const name = selector.alias
     switch (ast.comparison) {
-      case "=eq=":
+      case "eq":
         return handeEq(name, selector.format(ast.argument));
         break;
-      case "==":
-        return handeEq(name, selector.format(ast.argument));
-        break;
-      case "!=":
+      case "ne":
         return handeNotEq(name, selector.format(ast.argument));
         break;
-      case "=ne=":
-        return handeNotEq(name, selector.format(ast.argument));
-        break;
-      case "=op=":
+      case "op":
         return handleOp(name, selector.format, ast.argument);
         break;
-      case '=lt=':
+      case 'lt':
         return handleLt(name, selector.format(ast.argument));
         break;
-      case '=le=':
+      case 'le':
         return handleLte(name, selector.format(ast.argument));
         break;
-      case '=gt=':
+      case 'gt':
         return handleGt(name, selector.format(ast.argument));
         break;
-      case '=ge=':
+      case 'ge':
         return handleGte(name, selector.format(ast.argument));
         break;
       default:
